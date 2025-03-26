@@ -9,8 +9,8 @@ const containerStyle = {
 };
 
 const center = {
-  lat: 47.6062, // Default to Seattle
-  lng: -122.3321,
+  lat: 42.3399, // Default to Boston
+  lng: -71.0899,
 };
 
 export default function Home() {
