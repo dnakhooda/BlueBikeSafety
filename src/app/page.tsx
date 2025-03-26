@@ -9,7 +9,7 @@ const containerStyle = {
 };
 
 const center = {
-  lat: 42.3399, // Default to Boston
+  lat: 42.3399,
   lng: -71.0899,
 };
 
