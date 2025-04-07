@@ -5,6 +5,7 @@ import {
   LoadScript,
   Marker,
   Autocomplete,
+  DirectionsRenderer,
 } from "@react-google-maps/api";
 import { useState, useEffect, useRef } from "react";
 
@@ -26,14 +27,47 @@ const center = {
   lng: -71.0899,
 };
 
+// Haversine formula to calculate distance between two points in miles
+const calculateDistance = (
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number => {
+  const R = 3959; // Earth's radius in miles
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
 export default function Home() {
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [stations, setStations] = useState<BlueBikeStation[]>([]);
+  const [filteredStations, setFilteredStations] = useState<BlueBikeStation[]>(
+    []
+  );
   const [selectedStation, setSelectedStation] =
     useState<BlueBikeStation | null>(null);
   const [searchBox, setSearchBox] =
     useState<google.maps.places.Autocomplete | null>(null);
+  const [searchLocation, setSearchLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const [directions, setDirections] =
+    useState<google.maps.DirectionsResult | null>(null);
+  const [closestStation, setClosestStation] = useState<BlueBikeStation | null>(
+    null
+  );
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const directionsService = useRef<google.maps.DirectionsService | null>(null);
 
   useEffect(() => {
     const fetchStations = async () => {
@@ -41,6 +75,7 @@ export default function Home() {
         const response = await fetch("/api/stations");
         const data = await response.json();
         setStations(data);
+        setFilteredStations(data);
       } catch (error) {
         console.error("Error fetching stations:", error);
       }
@@ -49,11 +84,87 @@ export default function Home() {
     fetchStations();
   }, []);
 
+  useEffect(() => {
+    if (searchLocation) {
+      const nearbyStations = stations.filter((station) => {
+        const distance = calculateDistance(
+          searchLocation.lat,
+          searchLocation.lng,
+          parseFloat(station.latitude.toString()),
+          parseFloat(station.longitude.toString())
+        );
+        return distance <= 0.5;
+      });
+      setFilteredStations(nearbyStations);
+
+      // Find closest station
+      if (nearbyStations.length > 0) {
+        const closest = nearbyStations.reduce((prev, curr) => {
+          const prevDistance = calculateDistance(
+            searchLocation.lat,
+            searchLocation.lng,
+            parseFloat(prev.latitude.toString()),
+            parseFloat(prev.longitude.toString())
+          );
+          const currDistance = calculateDistance(
+            searchLocation.lat,
+            searchLocation.lng,
+            parseFloat(curr.latitude.toString()),
+            parseFloat(curr.longitude.toString())
+          );
+          return currDistance < prevDistance ? curr : prev;
+        });
+        setClosestStation(closest);
+      }
+    } else {
+      setFilteredStations(stations);
+      setClosestStation(null);
+    }
+  }, [searchLocation, stations]);
+
+  useEffect(() => {
+    if (map && searchLocation && closestStation && !directionsService.current) {
+      directionsService.current = new google.maps.DirectionsService();
+    }
+  }, [map, searchLocation, closestStation]);
+
+  useEffect(() => {
+    if (directionsService.current && searchLocation && closestStation) {
+      const origin = new google.maps.LatLng(
+        searchLocation.lat,
+        searchLocation.lng
+      );
+      const destination = new google.maps.LatLng(
+        parseFloat(closestStation.latitude.toString()),
+        parseFloat(closestStation.longitude.toString())
+      );
+
+      directionsService.current.route(
+        {
+          origin,
+          destination,
+          travelMode: google.maps.TravelMode.WALKING,
+        },
+        (result, status) => {
+          if (status === google.maps.DirectionsStatus.OK && result) {
+            setDirections(result);
+          }
+        }
+      );
+    }
+  }, [searchLocation, closestStation]);
+
   const onPlaceChanged = () => {
     if (searchBox && map) {
       const place = searchBox.getPlace();
       if (place.geometry?.location) {
-        map.panTo(place.geometry.location);
+        const location = {
+          lat: place.geometry.location.lat(),
+          lng: place.geometry.location.lng(),
+        };
+        setSearchLocation(location);
+        setDirections(null);
+        map.panTo(location);
         map.setZoom(15);
       }
     }
@@ -86,6 +197,11 @@ export default function Home() {
                   className="text-black w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
                 />
               </Autocomplete>
+              {searchLocation && (
+                <p className="mt-2 text-sm text-gray-600">
+                  Showing stations within 0.5 miles of selected location
+                </p>
+              )}
             </div>
           </div>
 
@@ -96,7 +212,7 @@ export default function Home() {
               zoom={13}
               onLoad={(map) => setMap(map)}
             >
-              {stations.map((station, index) => (
+              {filteredStations.map((station, index) => (
                 <Marker
                   key={index}
                   position={{
@@ -105,8 +221,16 @@ export default function Home() {
                   }}
                   title={station.name}
                   onClick={() => setSelectedStation(station)}
+                  icon={{
+                    url:
+                      station === closestStation
+                        ? "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
+                        : "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                    scaledSize: new google.maps.Size(32, 32),
+                  }}
                 />
               ))}
+              {directions && <DirectionsRenderer directions={directions} />}
             </GoogleMap>
           </div>
 
@@ -119,6 +243,23 @@ export default function Home() {
                 Located at: {selectedStation.latitude.toFixed(4)},{" "}
                 {selectedStation.longitude.toFixed(4)}
               </p>
+              {searchLocation && (
+                <p className="text-gray-600 mt-1">
+                  Distance:{" "}
+                  {calculateDistance(
+                    searchLocation.lat,
+                    searchLocation.lng,
+                    parseFloat(selectedStation.latitude.toString()),
+                    parseFloat(selectedStation.longitude.toString())
+                  ).toFixed(1)}{" "}
+                  miles away
+                </p>
+              )}
+              {selectedStation === closestStation && searchLocation && (
+                <p className="text-green-600 mt-2 font-medium">
+                  This is the closest station to your location!
+                </p>
+              )}
             </div>
           )}
         </div>
