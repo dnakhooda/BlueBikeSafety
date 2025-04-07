@@ -10,7 +10,7 @@ interface BlueBikeStation {
 }
 
 export async function GET() {
-  const filePath = path.join(process.cwd(), 'src', 'uncleanData.csv');
+  const filePath = path.join(process.cwd(), 'public', 'data', 'uncleanData.csv');
   const stations: BlueBikeStation[] = [];
 
   return new Promise((resolve, reject) => {
