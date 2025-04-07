@@ -1,7 +1,13 @@
 "use client";
 
 import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+interface BlueBikeStation {
+  name: string;
+  latitude: number;
+  longitude: number;
+}
 
 const containerStyle = {
   width: "100%",
@@ -17,30 +23,43 @@ const center = {
 
 export default function Home() {
   const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [stations, setStations] = useState<BlueBikeStation[]>([]);
+
+  useEffect(() => {
+    const fetchStations = async () => {
+      try {
+        const response = await fetch("/api/stations");
+        const data = await response.json();
+        setStations(data);
+      } catch (error) {
+        console.error("Error fetching stations:", error);
+      }
+    };
+
+    fetchStations();
+  }, []);
 
   return (
     <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">
-              Blue Bike Safety App
-            </h1>
-            <p className="text-lg text-gray-600">
-              Explore safe biking routes in Boston
-            </p>
-          </div>
-          <div className="bg-white rounded-xl shadow-lg p-4 h-[calc(100vh-200px)]">
-            <GoogleMap
-              mapContainerStyle={containerStyle}
-              center={center}
-              zoom={13}
-              onLoad={(map) => setMap(map)}
-            >
-              <Marker position={center} />
-            </GoogleMap>
-          </div>
-        </div>
+      <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+        <h1 className="text-[2rem] font-bold">Blue Bike Safety App</h1>
+        <GoogleMap
+          mapContainerStyle={containerStyle}
+          center={center}
+          zoom={12}
+          onLoad={(map) => setMap(map)}
+        >
+          {stations.map((station, index) => (
+            <Marker
+              key={index}
+              position={{
+                lat: parseFloat(station.latitude.toString()),
+                lng: parseFloat(station.longitude.toString()),
+              }}
+              title={station.name}
+            />
+          ))}
+        </GoogleMap>
       </div>
     </LoadScript>
   );
