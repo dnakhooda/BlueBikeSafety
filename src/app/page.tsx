@@ -15,26 +15,18 @@ interface BlueBikeStation {
   longitude: number;
 }
 
-const containerStyle = {
-  width: "100%",
-  height: "100%",
-  borderRadius: "12px",
-  boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
-};
-
 const center = {
   lat: 42.3399,
   lng: -71.0899,
 };
 
-// Haversine formula to calculate distance between two points in miles
 const calculateDistance = (
   lat1: number,
   lon1: number,
   lat2: number,
   lon2: number
 ): number => {
-  const R = 3959; // Earth's radius in miles
+  const R = 3959;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
@@ -66,6 +58,7 @@ export default function Home() {
   const [closestStation, setClosestStation] = useState<BlueBikeStation | null>(
     null
   );
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const directionsService = useRef<google.maps.DirectionsService | null>(null);
 
@@ -97,7 +90,6 @@ export default function Home() {
       });
       setFilteredStations(nearbyStations);
 
-      // Find closest station
       if (nearbyStations.length > 0) {
         const closest = nearbyStations.reduce((prev, curr) => {
           const prevDistance = calculateDistance(
@@ -117,26 +109,59 @@ export default function Home() {
         setClosestStation(closest);
       }
     } else {
-      setFilteredStations(stations);
+      setFilteredStations([]);
       setClosestStation(null);
+      setSelectedStation(null);
+      setDirections(null);
     }
   }, [searchLocation, stations]);
 
   useEffect(() => {
-    if (map && searchLocation && closestStation && !directionsService.current) {
+    if (map && searchLocation && !directionsService.current) {
       directionsService.current = new google.maps.DirectionsService();
     }
-  }, [map, searchLocation, closestStation]);
+  }, [map, searchLocation]);
 
-  useEffect(() => {
-    if (directionsService.current && searchLocation && closestStation) {
+  const zoomToAllStations = () => {
+    if (map && filteredStations.length > 0) {
+      const bounds = new google.maps.LatLngBounds();
+
+      filteredStations.forEach((station) => {
+        bounds.extend(
+          new google.maps.LatLng(
+            parseFloat(station.latitude.toString()),
+            parseFloat(station.longitude.toString())
+          )
+        );
+      });
+
+      if (searchLocation) {
+        bounds.extend(
+          new google.maps.LatLng(searchLocation.lat, searchLocation.lng)
+        );
+      }
+
+      map.fitBounds(bounds);
+    }
+  };
+
+  const handleStationClick = (station: BlueBikeStation) => {
+    if (selectedStation === station) {
+      setSelectedStation(null);
+      setDirections(null);
+      zoomToAllStations();
+      return;
+    }
+
+    setSelectedStation(station);
+    if (map && searchLocation && directionsService.current) {
       const origin = new google.maps.LatLng(
         searchLocation.lat,
         searchLocation.lng
       );
       const destination = new google.maps.LatLng(
-        parseFloat(closestStation.latitude.toString()),
-        parseFloat(closestStation.longitude.toString())
+        parseFloat(station.latitude.toString()),
+        parseFloat(station.longitude.toString())
       );
 
       directionsService.current.route(
@@ -152,7 +177,14 @@ export default function Home() {
         }
       );
     }
-  }, [searchLocation, closestStation]);
+
+    if (map) {
+      map.panTo({
+        lat: parseFloat(station.latitude.toString()),
+        lng: parseFloat(station.longitude.toString()),
+      });
+    }
+  };
 
   const onPlaceChanged = () => {
     if (searchBox && map) {
@@ -164,10 +196,31 @@ export default function Home() {
         };
         setSearchLocation(location);
         setDirections(null);
+        setSelectedStation(null);
         map.panTo(location);
         map.setZoom(15);
       }
     }
+  };
+
+  const getSortedStations = () => {
+    if (!searchLocation) return [];
+
+    return [...filteredStations].sort((a, b) => {
+      const distanceA = calculateDistance(
+        searchLocation.lat,
+        searchLocation.lng,
+        parseFloat(a.latitude.toString()),
+        parseFloat(a.longitude.toString())
+      );
+      const distanceB = calculateDistance(
+        searchLocation.lat,
+        searchLocation.lng,
+        parseFloat(b.latitude.toString()),
+        parseFloat(b.longitude.toString())
+      );
+      return distanceA - distanceB;
+    });
   };
 
   return (
@@ -194,44 +247,102 @@ export default function Home() {
                   ref={searchInputRef}
                   type="text"
                   placeholder="Enter an address in Boston"
-                  className="text-black w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm text-black"
                 />
               </Autocomplete>
-              {searchLocation && (
-                <p className="mt-2 text-sm text-gray-600">
-                  Showing stations within 0.5 miles of selected location
-                </p>
-              )}
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-lg p-4 h-[calc(100vh-300px)]">
-            <GoogleMap
-              mapContainerStyle={containerStyle}
-              center={center}
-              zoom={13}
-              onLoad={(map) => setMap(map)}
+          <div className="flex gap-4">
+            <div
+              className={`bg-white rounded-xl shadow-lg p-4 transition-all duration-300 ${
+                isSidebarOpen ? "w-90" : "w-12"
+              }`}
             >
-              {filteredStations.map((station, index) => (
-                <Marker
-                  key={index}
-                  position={{
-                    lat: parseFloat(station.latitude.toString()),
-                    lng: parseFloat(station.longitude.toString()),
-                  }}
-                  title={station.name}
-                  onClick={() => setSelectedStation(station)}
-                  icon={{
-                    url:
-                      station === closestStation
-                        ? "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
-                        : "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-                    scaledSize: new google.maps.Size(32, 32),
-                  }}
-                />
-              ))}
-              {directions && <DirectionsRenderer directions={directions} />}
-            </GoogleMap>
+              <button
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="mb-4 text-gray-500 hover:text-gray-700"
+              >
+                {isSidebarOpen ? "←" : "→"}
+              </button>
+
+              {isSidebarOpen && (
+                <div>
+                  <h2 className="text-black text-xl font-semibold mb-4">
+                    Nearby Stations
+                  </h2>
+                  <div className="space-y-4 max-h-[calc(100vh-400px)] overflow-y-auto">
+                    {getSortedStations().map((station, index) => {
+                      const distance = searchLocation
+                        ? calculateDistance(
+                            searchLocation.lat,
+                            searchLocation.lng,
+                            parseFloat(station.latitude.toString()),
+                            parseFloat(station.longitude.toString())
+                          )
+                        : 0;
+
+                      return (
+                        <div
+                          key={index}
+                          className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                            selectedStation === station
+                              ? "bg-blue-50 border border-blue-200"
+                              : "hover:bg-gray-50 border border-gray-100"
+                          }`}
+                          onClick={() => handleStationClick(station)}
+                        >
+                          <div className="flex justify-between items-start">
+                            <h3 className="font-medium text-gray-900">
+                              {station.name}
+                            </h3>
+                            <span className="text-sm font-medium text-gray-600">
+                              {distance.toFixed(2)} mi
+                            </span>
+                          </div>
+                          {station === closestStation && (
+                            <span className="inline-block mt-1 text-xs text-green-600 font-medium">
+                              Closest Station
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex-1 bg-white rounded-xl shadow-lg p-4 h-[calc(100vh-300px)]">
+              <div className="w-full h-full rounded-lg overflow-hidden">
+                <GoogleMap
+                  mapContainerClassName="w-full h-full rounded-lg"
+                  center={center}
+                  zoom={13}
+                  onLoad={(map) => setMap(map)}
+                >
+                  {filteredStations.map((station, index) => (
+                    <Marker
+                      key={index}
+                      position={{
+                        lat: parseFloat(station.latitude.toString()),
+                        lng: parseFloat(station.longitude.toString()),
+                      }}
+                      title={station.name}
+                      onClick={() => handleStationClick(station)}
+                      icon={{
+                        url:
+                          station === closestStation
+                            ? "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
+                            : "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                        scaledSize: new google.maps.Size(32, 32),
+                      }}
+                    />
+                  ))}
+                  {directions && <DirectionsRenderer directions={directions} />}
+                </GoogleMap>
+              </div>
+            </div>
           </div>
 
           {selectedStation && (
