@@ -1,7 +1,12 @@
 "use client";
 
-import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
-import { useState, useEffect } from "react";
+import {
+  GoogleMap,
+  LoadScript,
+  Marker,
+  Autocomplete,
+} from "@react-google-maps/api";
+import { useState, useEffect, useRef } from "react";
 
 interface BlueBikeStation {
   name: string;
@@ -24,6 +29,11 @@ const center = {
 export default function Home() {
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [stations, setStations] = useState<BlueBikeStation[]>([]);
+  const [selectedStation, setSelectedStation] =
+    useState<BlueBikeStation | null>(null);
+  const [searchBox, setSearchBox] =
+    useState<google.maps.places.Autocomplete | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const fetchStations = async () => {
@@ -39,27 +49,79 @@ export default function Home() {
     fetchStations();
   }, []);
 
+  const onPlaceChanged = () => {
+    if (searchBox && map) {
+      const place = searchBox.getPlace();
+      if (place.geometry?.location) {
+        map.panTo(place.geometry.location);
+        map.setZoom(15);
+      }
+    }
+  };
+
   return (
-    <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
-      <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-        <h1 className="text-[2rem] font-bold">Blue Bike Safety App</h1>
-        <GoogleMap
-          mapContainerStyle={containerStyle}
-          center={center}
-          zoom={12}
-          onLoad={(map) => setMap(map)}
-        >
-          {stations.map((station, index) => (
-            <Marker
-              key={index}
-              position={{
-                lat: parseFloat(station.latitude.toString()),
-                lng: parseFloat(station.longitude.toString()),
-              }}
-              title={station.name}
-            />
-          ))}
-        </GoogleMap>
+    <LoadScript
+      googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}
+      libraries={["places"]}
+    >
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">
+              Blue Bike Safety App
+            </h1>
+            <p className="text-lg text-gray-600 mb-6">
+              Explore safe biking routes in Boston
+            </p>
+
+            <div className="max-w-xl mx-auto">
+              <Autocomplete
+                onLoad={setSearchBox}
+                onPlaceChanged={onPlaceChanged}
+              >
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="Enter an address in Boston"
+                  className="text-black w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+                />
+              </Autocomplete>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-lg p-4 h-[calc(100vh-300px)]">
+            <GoogleMap
+              mapContainerStyle={containerStyle}
+              center={center}
+              zoom={13}
+              onLoad={(map) => setMap(map)}
+            >
+              {stations.map((station, index) => (
+                <Marker
+                  key={index}
+                  position={{
+                    lat: parseFloat(station.latitude.toString()),
+                    lng: parseFloat(station.longitude.toString()),
+                  }}
+                  title={station.name}
+                  onClick={() => setSelectedStation(station)}
+                />
+              ))}
+            </GoogleMap>
+          </div>
+
+          {selectedStation && (
+            <div className="mt-4 bg-white rounded-lg shadow-md p-4">
+              <h2 className="text-xl font-semibold text-gray-800">
+                {selectedStation.name}
+              </h2>
+              <p className="text-gray-600 mt-1">
+                Located at: {selectedStation.latitude.toFixed(4)},{" "}
+                {selectedStation.longitude.toFixed(4)}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </LoadScript>
   );
