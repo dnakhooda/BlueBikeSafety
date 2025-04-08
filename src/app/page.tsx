@@ -11,7 +11,12 @@ import { useState, useEffect, useRef } from "react";
 import { useTheme } from "@/context/ThemeContext";
 import Navigation from "./components/navigation";
 import { BlueBikeStation, Accident } from "./types/types";
-import { calculateDistance, calculateSafetyScore, getSafetyColor } from "./utils/utils";
+import {
+  calculateDistance,
+  calculateSafetyScore,
+  getMarkerIcon,
+  getSafetyColor,
+} from "./utils/utils";
 import { chartStyles } from "./other/MapStyles";
 
 const center = {
@@ -441,9 +446,7 @@ export default function Home() {
                   zoom={13}
                   onLoad={(map) => setMap(map)}
                   options={{
-                    styles: isDarkMode
-                      ? chartStyles
-                      : [],
+                    styles: isDarkMode ? chartStyles : [],
                   }}
                 >
                   {filteredStations.map((station, index) => (
@@ -456,10 +459,7 @@ export default function Home() {
                       title={station.name}
                       onClick={() => handleStationClick(station)}
                       icon={{
-                        url:
-                          station === closestStation
-                            ? "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
-                            : "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                        url: getMarkerIcon(station.safetyScore),
                         scaledSize: new google.maps.Size(32, 32),
                       }}
                     />
