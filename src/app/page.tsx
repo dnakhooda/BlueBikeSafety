@@ -52,6 +52,8 @@ export default function Home() {
   const { isDarkMode, toggleDarkMode } = useTheme();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const directionsService = useRef<google.maps.DirectionsService | null>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const stationRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
   const fetchStations = async () => {
     try {
@@ -136,6 +138,14 @@ export default function Home() {
         lng: parseFloat(station.longitude.toString()),
       });
     }
+    
+    // Scroll to the selected station in the sidebar
+    setTimeout(() => {
+      const stationElement = stationRefs.current.get(station.name);
+      if (stationElement && sidebarRef.current) {
+        stationElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
   };
 
   const onPlaceChanged = () => {
@@ -348,7 +358,7 @@ export default function Home() {
               </button>
 
               {isSidebarOpen && (
-                <div>
+                <div ref={sidebarRef}>
                   <h2
                     className={`text-xl font-semibold mb-4 ${
                       isDarkMode ? "text-white" : "text-black"
@@ -388,6 +398,11 @@ export default function Home() {
                       return (
                         <div
                           key={index}
+                          ref={(el) => {
+                            if (el) {
+                              stationRefs.current.set(station.name, el);
+                            }
+                          }}
                           className={`p-4 rounded-lg cursor-pointer transition-colors ${
                             selectedStation === station
                               ? isDarkMode
