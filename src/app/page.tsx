@@ -412,7 +412,11 @@ export default function Home() {
                               </span>
                             )}
                             {station === safestStation && (
-                              <span className="inline-block text-xs text-gray-600 font-medium">
+                              <span
+                                className={`inline-block text-xs font-medium ${
+                                  isDarkMode ? "text-gray-300" : "text-gray-900"
+                                }`}
+                              >
                                 Safest Station
                               </span>
                             )}
