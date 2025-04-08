@@ -47,3 +47,7 @@ export function getMarkerIcon(safetyScore: number | undefined): string {
     return "http://maps.google.com/mapfiles/ms/icons/red-dot.png";
   }
 }
+
+export function getUserLocationMarkerIcon(): string {
+  return "http://maps.google.com/mapfiles/ms/icons/blue-dot.png";
+}

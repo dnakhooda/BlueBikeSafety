@@ -16,6 +16,7 @@ import {
   calculateSafetyScore,
   getMarkerIcon,
   getSafetyColor,
+  getUserLocationMarkerIcon,
 } from "./utils/utils";
 import { chartStyles } from "./other/MapStyles";
 
@@ -355,6 +356,19 @@ export default function Home() {
                   >
                     Nearby Stations
                   </h2>
+                  {searchLocation && (
+                    <div className={`mb-4 p-3 rounded-lg ${
+                      isDarkMode ? "bg-blue-900 text-white" : "bg-blue-100 text-blue-800"
+                    }`}>
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
+                        <span className="font-medium">Your Location</span>
+                      </div>
+                      <p className="text-sm mt-1">
+                        {searchLocation.lat.toFixed(4)}, {searchLocation.lng.toFixed(4)}
+                      </p>
+                    </div>
+                  )}
                   <div className="space-y-4 max-h-[calc(100vh-400px)] overflow-y-auto">
                     {getSortedStations().map((station, index) => {
                       const distance = searchLocation
@@ -520,6 +534,19 @@ export default function Home() {
                       }}
                     />
                   ))}
+                  {searchLocation && (
+                    <Marker
+                      position={{
+                        lat: searchLocation.lat,
+                        lng: searchLocation.lng,
+                      }}
+                      title="Your Location"
+                      icon={{
+                        url: getUserLocationMarkerIcon(),
+                        scaledSize: new google.maps.Size(40, 40),
+                      }}
+                    />
+                  )}
                   {directions && <DirectionsRenderer directions={directions} />}
                 </GoogleMap>
               </div>
