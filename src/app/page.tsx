@@ -140,6 +140,7 @@ export default function Home() {
   const onPlaceChanged = () => {
     if (searchBox && map) {
       const place = searchBox.getPlace();
+
       if (place.geometry?.location) {
         const location = {
           lat: place.geometry.location.lat(),
@@ -326,11 +327,11 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex gap-4 transition-all">
             <div
               className={`${
                 isDarkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
-              } rounded-xl shadow-lg p-4 transition-all duration-300 ${
+              } rounded-xl shadow-lg p-4 transition-all ${
                 isSidebarOpen ? "w-90" : "w-12"
               }`}
             >
@@ -373,7 +374,7 @@ export default function Home() {
                       return (
                         <div
                           key={index}
-                          className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                          className={`p-4 rounded-lg cursor-pointer transition-colors ${
                             selectedStation === station
                               ? isDarkMode
                                 ? "bg-gray-700 border border-gray-600"
@@ -384,7 +385,7 @@ export default function Home() {
                           }`}
                           onClick={() => handleStationClick(station)}
                         >
-                          <div className="flex justify-between items-start">
+                          <div className="flex justify-between items-start mb-3">
                             <h3
                               className={`font-medium ${
                                 isDarkMode ? "text-white" : "text-gray-900"
@@ -394,18 +395,20 @@ export default function Home() {
                               {station.name}
                             </h3>
                             <span
-                              className={`text-sm font-medium ${
+                              className={`text-sm font-medium ml-2 min-w-[55px] ${
                                 isDarkMode ? "text-gray-300" : "text-gray-600"
                               }`}
                             >
                               {distance.toFixed(2)} mi
                             </span>
                           </div>
-                          <div className="mt-1 flex items-center gap-2">
+                          <div className="mt-2 flex items-center gap-3">
                             {station === closestStation && (
                               <span
-                                className={`inline-block text-xs font-medium ${
-                                  isDarkMode ? "text-gray-300" : "text-gray-900"
+                                className={`inline-block text-xs font-medium px-2 py-1 rounded ${
+                                  isDarkMode
+                                    ? "bg-blue-900 text-blue-200"
+                                    : "bg-blue-100 text-blue-800"
                                 }`}
                               >
                                 Closest Station
@@ -413,8 +416,10 @@ export default function Home() {
                             )}
                             {station === safestStation && (
                               <span
-                                className={`inline-block text-xs font-medium ${
-                                  isDarkMode ? "text-gray-300" : "text-gray-900"
+                                className={`inline-block text-xs font-medium px-2 py-1 rounded ${
+                                  isDarkMode
+                                    ? "bg-green-900 text-green-200"
+                                    : "bg-green-100 text-green-800"
                                 }`}
                               >
                                 Safest Station
@@ -422,13 +427,60 @@ export default function Home() {
                             )}
                           </div>
                           {selectedStation === station && (
-                            <span
-                              className={`text-xs font-medium ${
-                                isDarkMode ? "text-gray-300" : "text-gray-600"
-                              }`}
-                            >
-                              {station.nearbyAccidents} accidents within 0.5 mi
-                            </span>
+                            <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+                              <div className="flex items-center justify-between mb-2">
+                                <span
+                                  className={`text-sm font-medium ${
+                                    isDarkMode
+                                      ? "text-gray-300"
+                                      : "text-gray-600"
+                                  }`}
+                                >
+                                  Safety Rating:
+                                </span>
+                                <span
+                                  className={`text-sm font-bold ${
+                                    isDarkMode ? "text-white" : "text-gray-900"
+                                  }`}
+                                >
+                                  {station.safetyScore !== undefined
+                                    ? (station.safetyScore * 10).toFixed(1) +
+                                      "/10"
+                                    : "N/A"}
+                                </span>
+                              </div>
+                              <div
+                                className={`w-full rounded-full h-3 mb-2
+                                ${isDarkMode ? "bg-gray-200" : "bg-gray-700"}`}
+                              >
+                                <div
+                                  className={`h-3 rounded-full ${
+                                    station.safetyScore !== undefined
+                                      ? getSafetyColor(station.safetyScore)
+                                      : "bg-red-500"
+                                  }`}
+                                  style={{
+                                    backgroundColor:
+                                      station.safetyScore !== undefined
+                                        ? getSafetyColor(station.safetyScore)
+                                        : "red",
+                                    width: `${
+                                      station.safetyScore !== undefined
+                                        ? station.safetyScore * 100
+                                        : 0
+                                    }%`,
+                                  }}
+                                ></div>
+                              </div>
+                              <span
+                                className={`text-sm font-medium ${
+                                  isDarkMode ? "text-gray-300" : "text-gray-600"
+                                }`}
+                              >
+                                {station.nearbyAccidents} accidents within 0.1
+                                mi
+                              </span>
+                            </div>
                           )}
                         </div>
                       );

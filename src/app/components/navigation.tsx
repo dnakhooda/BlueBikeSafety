@@ -38,13 +38,12 @@ const Navigation = () => {
             </div>
           </div>
 
-          {/* Dark Mode Toggle Button */}
           <button
             onClick={toggleDarkMode}
             className={`p-2 rounded-full transition-all ${
               isDarkMode
-                ? "bg-gray-700 text-yellow-300 hover:bg-gray-600"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                ? "text-yellow-300 hover:bg-gray-600"
+                : "text-gray-700 hover:bg-gray-200"
             }`}
             aria-label="Toggle dark mode"
           >
