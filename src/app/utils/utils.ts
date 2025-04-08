@@ -30,8 +30,8 @@ export const calculateSafetyScore = (accidents: number): number => {
 };
 
 export const getSafetyColor = (score: number): string => {
-  const red = Math.round(205 * (1 - score) + 25);
-  const green = Math.round(205 * score + 25);
+  const red = Math.round(155 * (1 - score) + 50);
+  const green = Math.round(155 * score + 50);
   return `rgb(${red}, ${green}, 0)`;
 };
 

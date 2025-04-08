@@ -412,8 +412,8 @@ export default function Home() {
                               </span>
                             )}
                             {station === safestStation && (
-                              <span className="inline-block text-xs text-green-600 font-medium">
-                                Safety Station
+                              <span className="inline-block text-xs text-gray-600 font-medium">
+                                Safest Station
                               </span>
                             )}
                           </div>
