@@ -49,6 +49,7 @@ export default function Home() {
   );
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [accidents, setAccidents] = useState<Accident[]>([]);
+  const [showNoStationsPopup, setShowNoStationsPopup] = useState(false);
   const { isDarkMode, toggleDarkMode } = useTheme();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const directionsService = useRef<google.maps.DirectionsService | null>(null);
@@ -166,6 +167,24 @@ export default function Home() {
     }
   };
 
+  // Function to check if a location is in Boston
+  const isInBoston = (lat: number, lng: number): boolean => {
+    // Boston's approximate boundaries
+    const bostonBounds = {
+      north: 42.4,
+      south: 42.2,
+      east: -70.9,
+      west: -71.2
+    };
+    
+    return (
+      lat >= bostonBounds.south &&
+      lat <= bostonBounds.north &&
+      lng >= bostonBounds.west &&
+      lng <= bostonBounds.east
+    );
+  };
+
   const getSortedStations = () => {
     if (!searchLocation) return [];
 
@@ -197,6 +216,13 @@ export default function Home() {
 
   useEffect(() => {
     if (searchLocation) {
+      // Check if the location is in Boston
+      if (!isInBoston(searchLocation.lat, searchLocation.lng)) {
+        setShowNoStationsPopup(true);
+        setTimeout(() => setShowNoStationsPopup(false), 5000); // Hide after 5 seconds
+        return;
+      }
+      
       const nearbyStations = stations
         .filter((station) => {
           const distance = calculateDistance(
@@ -228,6 +254,12 @@ export default function Home() {
         });
 
       setFilteredStations(nearbyStations);
+
+      // Show popup if no stations are nearby
+      if (nearbyStations.length === 0) {
+        setShowNoStationsPopup(true);
+        setTimeout(() => setShowNoStationsPopup(false), 5000); // Hide after 5 seconds
+      }
 
       if (nearbyStations.length > 0) {
         const closest = nearbyStations.reduce((prev, curr) => {
@@ -315,6 +347,25 @@ export default function Home() {
         }`}
       >
         <Navigation />
+
+        {showNoStationsPopup && (
+          <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
+            isDarkMode ? "bg-red-800 text-white" : "bg-red-100 text-red-800"
+          }`}>
+            <div className="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              <span className="font-medium">Address not in Boston or no stations nearby</span>
+            </div>
+            <button 
+              onClick={() => setShowNoStationsPopup(false)}
+              className={`mt-2 text-sm ${isDarkMode ? "text-red-200 hover:text-white" : "text-red-600 hover:text-red-800"}`}
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="mb-6">
