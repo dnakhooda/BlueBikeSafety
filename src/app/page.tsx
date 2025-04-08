@@ -8,60 +8,15 @@ import {
   DirectionsRenderer,
 } from "@react-google-maps/api";
 import { useState, useEffect, useRef } from "react";
-
-interface BlueBikeStation {
-  name: string;
-  latitude: number;
-  longitude: number;
-  nearbyAccidents?: number;
-  safetyScore?: number;
-}
-
-interface Accident {
-  latitude: number;
-  longitude: number;
-}
+import { useTheme } from "@/context/ThemeContext";
+import Navigation from "./components/navigation";
+import { BlueBikeStation, Accident } from "./types/types";
+import { calculateDistance, calculateSafetyScore, getSafetyColor } from "./utils/utils";
+import { chartStyles } from "./other/MapStyles";
 
 const center = {
   lat: 42.3399,
   lng: -71.0899,
-};
-
-const calculateDistance = (
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number
-): number => {
-  const R = 3959;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-};
-
-const calculateSafetyScore = (accidents: number): number => {
-  if (accidents === 0) return 1.0;
-  if (accidents === 2) return 0.9;
-  if (accidents <= 4) return 0.8;
-  if (accidents <= 6) return 0.7;
-  if (accidents <= 8) return 0.6;
-  if (accidents <= 10) return 0.4;
-  if (accidents <= 12) return 0.3;
-  if (accidents <= 14) return 0.2;
-  return 0;
-};
-
-const getSafetyColor = (score: number): string => {
-  const red = Math.round(205 * (1 - score) + 25);
-  const green = Math.round(205 * score + 25);
-  return `rgb(${red}, ${green}, 0)`;
 };
 
 export default function Home() {
@@ -88,114 +43,30 @@ export default function Home() {
   );
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [accidents, setAccidents] = useState<Accident[]>([]);
+  const { isDarkMode, toggleDarkMode } = useTheme();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const directionsService = useRef<google.maps.DirectionsService | null>(null);
 
-  useEffect(() => {
-    const fetchStations = async () => {
-      try {
-        const response = await fetch("/api/stations");
-        const data = await response.json();
-        setStations(data);
-        setFilteredStations(data);
-      } catch (error) {
-        console.error("Error fetching stations:", error);
-      }
-    };
-
-    fetchStations();
-  }, []);
-
-  useEffect(() => {
-    const fetchAccidents = async () => {
-      try {
-        const response = await fetch("/api/accidents");
-        const data = await response.json();
-        setAccidents(data);
-      } catch (error) {
-        console.error("Error fetching accidents:", error);
-      }
-    };
-
-    fetchAccidents();
-  }, []);
-
-  useEffect(() => {
-    if (searchLocation) {
-      const nearbyStations = stations
-        .filter((station) => {
-          const distance = calculateDistance(
-            searchLocation.lat,
-            searchLocation.lng,
-            parseFloat(station.latitude.toString()),
-            parseFloat(station.longitude.toString())
-          );
-          return distance <= 0.5;
-        })
-        .map((station) => {
-          const nearbyAccidents = accidents.filter((accident) => {
-            const distance = calculateDistance(
-              parseFloat(station.latitude.toString()),
-              parseFloat(station.longitude.toString()),
-              accident.latitude,
-              accident.longitude
-            );
-            return distance <= 0.1;
-          }).length;
-
-          const safetyScore = calculateSafetyScore(nearbyAccidents);
-
-          return {
-            ...station,
-            nearbyAccidents,
-            safetyScore,
-          };
-        });
-
-      setFilteredStations(nearbyStations);
-
-      if (nearbyStations.length > 0) {
-        const closest = nearbyStations.reduce((prev, curr) => {
-          const prevDistance = calculateDistance(
-            searchLocation.lat,
-            searchLocation.lng,
-            parseFloat(prev.latitude.toString()),
-            parseFloat(prev.longitude.toString())
-          );
-          const currDistance = calculateDistance(
-            searchLocation.lat,
-            searchLocation.lng,
-            parseFloat(curr.latitude.toString()),
-            parseFloat(curr.longitude.toString())
-          );
-          return currDistance < prevDistance ? curr : prev;
-        });
-        setClosestStation(closest);
-
-        const safest = nearbyStations.reduce((prev, curr) => {
-          const prevScore = prev.safetyScore || 0;
-          const currScore = curr.safetyScore || 0;
-          return currScore > prevScore ? curr : prev;
-        });
-        setSafestStation(safest);
-      } else {
-        setClosestStation(null);
-        setSafestStation(null);
-      }
-    } else {
-      setFilteredStations([]);
-      setClosestStation(null);
-      setSafestStation(null);
-      setSelectedStation(null);
-      setDirections(null);
+  const fetchStations = async () => {
+    try {
+      const response = await fetch("/api/stations");
+      const data = await response.json();
+      setStations(data);
+      setFilteredStations(data);
+    } catch (error) {
+      console.error("Error fetching stations:", error);
     }
-  }, [searchLocation, stations, accidents]);
+  };
 
-  useEffect(() => {
-    if (map && searchLocation && !directionsService.current) {
-      directionsService.current = new google.maps.DirectionsService();
+  const fetchAccidents = async () => {
+    try {
+      const response = await fetch("/api/accidents");
+      const data = await response.json();
+      setAccidents(data);
+    } catch (error) {
+      console.error("Error fetching accidents:", error);
     }
-  }, [map, searchLocation]);
+  };
 
   const zoomToAllStations = () => {
     if (map && filteredStations.length > 0) {
@@ -298,22 +169,139 @@ export default function Home() {
     });
   };
 
+  useEffect(() => {
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+
+    fetchStations();
+    fetchAccidents();
+  }, []);
+
+  useEffect(() => {
+    if (searchLocation) {
+      const nearbyStations = stations
+        .filter((station) => {
+          const distance = calculateDistance(
+            searchLocation.lat,
+            searchLocation.lng,
+            parseFloat(station.latitude.toString()),
+            parseFloat(station.longitude.toString())
+          );
+          return distance <= 0.5;
+        })
+        .map((station) => {
+          const nearbyAccidents = accidents.filter((accident) => {
+            const distance = calculateDistance(
+              parseFloat(station.latitude.toString()),
+              parseFloat(station.longitude.toString()),
+              accident.latitude,
+              accident.longitude
+            );
+            return distance <= 0.1;
+          }).length;
+
+          const safetyScore = calculateSafetyScore(nearbyAccidents);
+
+          return {
+            ...station,
+            nearbyAccidents,
+            safetyScore,
+          };
+        });
+
+      setFilteredStations(nearbyStations);
+
+      if (nearbyStations.length > 0) {
+        const closest = nearbyStations.reduce((prev, curr) => {
+          const prevDistance = calculateDistance(
+            searchLocation.lat,
+            searchLocation.lng,
+            parseFloat(prev.latitude.toString()),
+            parseFloat(prev.longitude.toString())
+          );
+          const currDistance = calculateDistance(
+            searchLocation.lat,
+            searchLocation.lng,
+            parseFloat(curr.latitude.toString()),
+            parseFloat(curr.longitude.toString())
+          );
+          return currDistance < prevDistance ? curr : prev;
+        });
+        setClosestStation(closest);
+
+        const safest = nearbyStations.reduce((prev, curr) => {
+          const prevScore = prev.safetyScore || 0;
+          const currScore = curr.safetyScore || 0;
+          return currScore > prevScore ? curr : prev;
+        });
+        setSafestStation(safest);
+      } else {
+        setClosestStation(null);
+        setSafestStation(null);
+      }
+    } else {
+      setFilteredStations([]);
+      setClosestStation(null);
+      setSafestStation(null);
+      setSelectedStation(null);
+      setDirections(null);
+    }
+  }, [searchLocation, stations, accidents]);
+
+  useEffect(() => {
+    if (map && searchLocation && !directionsService.current) {
+      directionsService.current = new google.maps.DirectionsService();
+    }
+  }, [map, searchLocation]);
+
+  useEffect(() => {
+    if (isDarkMode) {
+      const style = document.createElement("style");
+      style.innerHTML = `
+        .pac-container {
+          background-color: #1f2937 !important;
+          color: #f3f4f6 !important;
+          border-color: #374151 !important;
+        }
+        .pac-item {
+          background-color: #1f2937 !important;
+          color: #f3f4f6 !important;
+          border-color: #374151 !important;
+        }
+        .pac-item:hover {
+          background-color: #374151 !important;
+        }
+        .pac-item-query {
+          color: #f3f4f6 !important;
+        }
+        .pac-matched {
+          color: #60a5fa !important;
+        }
+      `;
+      document.head.appendChild(style);
+
+      return () => {
+        document.head.removeChild(style);
+      };
+    }
+  }, [isDarkMode]);
+
   return (
     <LoadScript
       googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}
       libraries={["places"]}
     >
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">
-              Blue Bike Safety App
-            </h1>
-            <p className="text-lg text-gray-600 mb-6">
-              Explore safe biking routes in Boston
-            </p>
+      <div
+        className={`min-h-screen ${
+          isDarkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
+        }`}
+      >
+        <Navigation />
 
-            <div className="max-w-xl mx-auto">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="mb-6">
+            <div className="mx-auto">
               <Autocomplete
                 onLoad={setSearchBox}
                 onPlaceChanged={onPlaceChanged}
@@ -322,7 +310,12 @@ export default function Home() {
                   ref={searchInputRef}
                   type="text"
                   placeholder="Enter an address in Boston"
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm text-black"
+                  className={`${
+                    isDarkMode
+                      ? "bg-gray-700 text-white border-gray-600 focus:ring-blue-400 placeholder-gray-400"
+                      : "bg-white text-black border-gray-300 focus:ring-blue-400 placeholder-gray-500"
+                  } w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:border-transparent shadow-sm`}
+                  autoFocus
                 />
               </Autocomplete>
             </div>
@@ -330,20 +323,30 @@ export default function Home() {
 
           <div className="flex gap-4">
             <div
-              className={`bg-white rounded-xl shadow-lg p-4 transition-all duration-300 ${
+              className={`${
+                isDarkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
+              } rounded-xl shadow-lg p-4 transition-all duration-300 ${
                 isSidebarOpen ? "w-90" : "w-12"
               }`}
             >
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="mb-4 text-gray-500 hover:text-gray-700"
+                className={`mb-4 ${
+                  isDarkMode
+                    ? "text-gray-300 hover:text-white"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
               >
                 {isSidebarOpen ? "←" : "→"}
               </button>
 
               {isSidebarOpen && (
                 <div>
-                  <h2 className="text-black text-xl font-semibold mb-4">
+                  <h2
+                    className={`text-xl font-semibold mb-4 ${
+                      isDarkMode ? "text-white" : "text-black"
+                    }`}
+                  >
                     Nearby Stations
                   </h2>
                   <div className="space-y-4 max-h-[calc(100vh-400px)] overflow-y-auto">
@@ -367,37 +370,55 @@ export default function Home() {
                           key={index}
                           className={`p-3 rounded-lg cursor-pointer transition-colors ${
                             selectedStation === station
-                              ? "bg-blue-50 border border-blue-200"
+                              ? isDarkMode
+                                ? "bg-gray-700 border border-gray-600"
+                                : "bg-blue-50 border border-blue-200"
+                              : isDarkMode
+                              ? "hover:bg-gray-700 border border-gray-700"
                               : "hover:bg-gray-50 border border-gray-100"
                           }`}
                           onClick={() => handleStationClick(station)}
                         >
                           <div className="flex justify-between items-start">
                             <h3
-                              className="font-medium text-gray-900"
+                              className={`font-medium ${
+                                isDarkMode ? "text-white" : "text-gray-900"
+                              }`}
                               style={{ color: safetyColor }}
                             >
                               {station.name}
                             </h3>
-                            <span className="text-sm font-medium text-gray-600">
+                            <span
+                              className={`text-sm font-medium ${
+                                isDarkMode ? "text-gray-300" : "text-gray-600"
+                              }`}
+                            >
                               {distance.toFixed(2)} mi
                             </span>
                           </div>
                           <div className="mt-1 flex items-center gap-2">
                             {station === closestStation && (
-                              <span className="inline-block text-xs text-gray-900 font-medium">
+                              <span
+                                className={`inline-block text-xs font-medium ${
+                                  isDarkMode ? "text-gray-300" : "text-gray-900"
+                                }`}
+                              >
                                 Closest Station
                               </span>
                             )}
                             {station === safestStation && (
-                              <span className="inline-block text-xs text-gray-900 font-medium">
-                                Safest Station
+                              <span className="inline-block text-xs text-green-600 font-medium">
+                                Safety Station
                               </span>
                             )}
                           </div>
                           {selectedStation === station && (
-                            <span className="text-xs font-medium text-gray-600">
-                              {station.nearbyAccidents} accidents within 0.1 mi
+                            <span
+                              className={`text-xs font-medium ${
+                                isDarkMode ? "text-gray-300" : "text-gray-600"
+                              }`}
+                            >
+                              {station.nearbyAccidents} accidents within 0.5 mi
                             </span>
                           )}
                         </div>
@@ -408,13 +429,22 @@ export default function Home() {
               )}
             </div>
 
-            <div className="flex-1 bg-white rounded-xl shadow-lg p-4 h-[calc(100vh-300px)]">
+            <div
+              className={`flex-1 ${
+                isDarkMode ? "bg-gray-800" : "bg-white"
+              } rounded-xl shadow-lg p-4 h-[calc(100vh-300px)]`}
+            >
               <div className="w-full h-full rounded-lg overflow-hidden">
                 <GoogleMap
                   mapContainerClassName="w-full h-full rounded-lg"
                   center={center}
                   zoom={13}
                   onLoad={(map) => setMap(map)}
+                  options={{
+                    styles: isDarkMode
+                      ? chartStyles
+                      : [],
+                  }}
                 >
                   {filteredStations.map((station, index) => (
                     <Marker
@@ -439,7 +469,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </div>
+        </main>
       </div>
     </LoadScript>
   );
