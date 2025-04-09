@@ -633,7 +633,7 @@ export default function Home() {
                                   {station.nearbyAccidents === 1
                                     ? "accident"
                                     : "accidents"}{" "}
-                                  total, {station.recentAccidents} recent (0.1
+                                  total, {station.recentAccidents} recent* (0.1
                                   mi)
                                 </span>
                                 <br />
@@ -652,11 +652,13 @@ export default function Home() {
                                 </span>
                               </div>
                               <span
-                                className={`text-xs italic ${
+                                className={`text-xs italic mt-1 block ${
                                   isDarkMode ? "text-gray-400" : "text-gray-500"
                                 }`}
                               >
                                 Data collected over a 10-year period
+                                <br />
+                                *recent accidents are within the last year
                               </span>
                             </div>
                           )}
