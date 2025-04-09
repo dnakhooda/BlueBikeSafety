@@ -3,7 +3,7 @@ import csvParser from "csv-parser";
 import fs from "fs";
 import path from "path";
 
-export interface Accident {
+interface Accident {
   latitude: number;
   longitude: number;
 }

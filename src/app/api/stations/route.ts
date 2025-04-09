@@ -3,7 +3,7 @@ import csvParser from "csv-parser";
 import fs from "fs";
 import path from "path";
 
-export interface BlueBikeStation {
+interface BlueBikeStation {
   name: string;
   latitude: number;
   longitude: number;
