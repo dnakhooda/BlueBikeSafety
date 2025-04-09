@@ -5,14 +5,14 @@ export const calculateSafetyScore = (
 ): number => {
   let score = 0;
   if (accidents === 0) score = 1.0;
-  if (accidents <= 2 && accidents > 0) score = 0.9;
-  if (accidents <= 4 && accidents > 2) score = 0.8;
-  if (accidents <= 6 && accidents > 4) score = 0.7;
-  if (accidents <= 8 && accidents > 6) score = 0.6;
-  if (accidents <= 10 && accidents > 8) score = 0.4;
-  if (accidents <= 12 && accidents > 10) score = 0.3;
-  if (accidents <= 14 && accidents > 12) score = 0.2;
-  if (accidents <= 16 && accidents > 14) score = 0.1;
+  else if (accidents <= 2) score = 0.9;
+  else if (accidents <= 4) score = 0.8;
+  else if (accidents <= 6) score = 0.7;
+  else if (accidents <= 8) score = 0.6;
+  else if (accidents <= 10) score = 0.4;
+  else if (accidents <= 12) score = 0.3;
+  else if (accidents <= 14) score = 0.2;
+  else if (accidents <= 16) score = 0.1;
 
   if (fatalities > 0) score /= 2;
 
