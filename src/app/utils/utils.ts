@@ -26,6 +26,7 @@ export const calculateSafetyScore = (accidents: number): number => {
   if (accidents <= 10) return 0.4;
   if (accidents <= 12) return 0.3;
   if (accidents <= 14) return 0.2;
+  if (accidents <= 16) return 0.1;
   return 0;
 };
 
