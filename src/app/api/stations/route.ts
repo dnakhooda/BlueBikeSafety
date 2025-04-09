@@ -2,14 +2,7 @@ import { NextResponse } from "next/server";
 import csvParser from "csv-parser";
 import fs from "fs";
 import path from "path";
-
-interface BlueBikeStation {
-  name: string;
-  latitude: number;
-  longitude: number;
-  nearbyAccidents?: number;
-  safetyScore?: number;
-}
+import { BlueBikeStation } from "@/app/types/types";
 
 interface BikeStationRow {
   Lat: string;
