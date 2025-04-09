@@ -658,7 +658,7 @@ export default function Home() {
                               >
                                 Data collected over a 10-year period
                                 <br />
-                                *recent accidents are within the last year
+                                *recent accidents are within 12 months
                               </span>
                             </div>
                           )}
