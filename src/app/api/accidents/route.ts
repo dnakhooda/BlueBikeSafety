@@ -2,7 +2,11 @@ import { NextResponse } from "next/server";
 import csvParser from "csv-parser";
 import fs from "fs";
 import path from "path";
-import { Accident } from "@/app/types/types";
+
+export interface Accident {
+  latitude: number;
+  longitude: number;
+}
 
 interface AccidentRow {
   lat: string;
