@@ -265,7 +265,10 @@ export default function Home() {
             return distance <= 0.3;
           }).length;
 
-          const safetyScore = calculateSafetyScore(nearbyAccidents, nearbyFatalities);
+          const safetyScore = calculateSafetyScore(
+            nearbyAccidents,
+            nearbyFatalities
+          );
 
           return {
             ...station,
@@ -600,8 +603,11 @@ export default function Home() {
                                   isDarkMode ? "text-gray-300" : "text-gray-600"
                                 }`}
                               >
-                                {station.nearbyAccidents} accidents within 0.1
-                                mi
+                                {station.nearbyAccidents}{" "}
+                                {station.nearbyAccidents === 1
+                                  ? "accident"
+                                  : "accidents"}{" "}
+                                within 0.1 mi
                               </span>
                               <br />
                               <span
@@ -609,8 +615,19 @@ export default function Home() {
                                   isDarkMode ? "text-gray-300" : "text-gray-600"
                                 }`}
                               >
-                                {station.nearbyFatalities} fatalities within 0.3
-                                mi
+                                {station.nearbyFatalities}{" "}
+                                {station.nearbyFatalities === 1
+                                  ? "fatality"
+                                  : "fatalities"}{" "}
+                                within 0.3 mi
+                              </span>
+                              <br />
+                              <span
+                                className={`text-xs italic ${
+                                  isDarkMode ? "text-gray-400" : "text-gray-500"
+                                }`}
+                              >
+                                Data collected over a 10-year period
                               </span>
                             </div>
                           )}
