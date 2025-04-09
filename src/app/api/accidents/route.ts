@@ -7,6 +7,7 @@ import { Accident } from "@/app/types/types";
 interface AccidentRow {
   lat: string;
   long: string;
+  dispatch_ts: string;
 }
 
 export async function GET(): Promise<Response> {
@@ -26,6 +27,7 @@ export async function GET(): Promise<Response> {
           accidents.push({
             latitude: parseFloat(row.lat),
             longitude: parseFloat(row.long),
+            time: row.dispatch_ts,
           });
         }
       })

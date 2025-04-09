@@ -4,12 +4,14 @@ export interface BlueBikeStation {
   longitude: number;
   nearbyAccidents?: number;
   nearbyFatalities?: number;
+  recentAccidents?: number;
   safetyScore?: number;
 }
 
 export interface Accident {
   latitude: number;
   longitude: number;
+  time: string;
 }
 
 export interface Fatality {

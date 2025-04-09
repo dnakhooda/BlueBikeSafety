@@ -255,6 +255,27 @@ export default function Home() {
             return distance <= 0.1;
           }).length;
 
+          const oneYearAgo = new Date();
+          oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
+          const recentAccidents = accidents.filter((accident) => {
+            const distance = calculateDistance(
+              parseFloat(station.latitude.toString()),
+              parseFloat(station.longitude.toString()),
+              accident.latitude,
+              accident.longitude
+            );
+
+            if (distance > 0.1) return false;
+
+            if (accident.time) {
+              const accidentDate = new Date(accident.time);
+              return accidentDate >= oneYearAgo;
+            }
+
+            return false;
+          }).length;
+
           const nearbyFatalities = fatalities.filter((fatality) => {
             const distance = calculateDistance(
               parseFloat(station.latitude.toString()),
@@ -267,13 +288,15 @@ export default function Home() {
 
           const safetyScore = calculateSafetyScore(
             nearbyAccidents,
-            nearbyFatalities
+            nearbyFatalities,
+            recentAccidents
           );
 
           return {
             ...station,
             nearbyAccidents,
             nearbyFatalities,
+            recentAccidents,
             safetyScore,
           };
         });
@@ -320,7 +343,7 @@ export default function Home() {
       setSelectedStation(null);
       setDirections(null);
     }
-  }, [searchLocation, stations, accidents]);
+  }, [searchLocation, stations, accidents, fatalities]);
 
   useEffect(() => {
     if (map && searchLocation && !directionsService.current) {
@@ -470,7 +493,7 @@ export default function Home() {
                         <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
                         <span className="font-medium">Your Location</span>
                       </div>
-                      <p className="text-sm mt-1">
+                      <p className="text-xs mt-1">
                         {searchLocation.lat.toFixed(4)},{" "}
                         {searchLocation.lng.toFixed(4)}
                       </p>
@@ -598,30 +621,36 @@ export default function Home() {
                                   }}
                                 ></div>
                               </div>
-                              <span
-                                className={`text-sm font-medium ${
-                                  isDarkMode ? "text-gray-300" : "text-gray-600"
-                                }`}
-                              >
-                                {station.nearbyAccidents}{" "}
-                                {station.nearbyAccidents === 1
-                                  ? "accident"
-                                  : "accidents"}{" "}
-                                within 0.1 mi
-                              </span>
-                              <br />
-                              <span
-                                className={`text-sm font-medium ${
-                                  isDarkMode ? "text-gray-300" : "text-gray-600"
-                                }`}
-                              >
-                                {station.nearbyFatalities}{" "}
-                                {station.nearbyFatalities === 1
-                                  ? "fatality"
-                                  : "fatalities"}{" "}
-                                within 0.3 mi
-                              </span>
-                              <br />
+                              <div className="space-y-1">
+                                <span
+                                  className={`text-sm font-medium ${
+                                    isDarkMode
+                                      ? "text-gray-300"
+                                      : "text-gray-600"
+                                  }`}
+                                >
+                                  {station.nearbyAccidents}{" "}
+                                  {station.nearbyAccidents === 1
+                                    ? "accident"
+                                    : "accidents"}{" "}
+                                  total, {station.recentAccidents} recent (0.1
+                                  mi)
+                                </span>
+                                <br />
+                                <span
+                                  className={`text-sm font-medium ${
+                                    isDarkMode
+                                      ? "text-gray-300"
+                                      : "text-gray-600"
+                                  }`}
+                                >
+                                  {station.nearbyFatalities}{" "}
+                                  {station.nearbyFatalities === 1
+                                    ? "fatality"
+                                    : "fatalities"}{" "}
+                                  (0.3 mi)
+                                </span>
+                              </div>
                               <span
                                 className={`text-xs italic ${
                                   isDarkMode ? "text-gray-400" : "text-gray-500"
