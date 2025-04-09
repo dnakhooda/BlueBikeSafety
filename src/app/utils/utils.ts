@@ -17,17 +17,20 @@ export const calculateDistance = (
   return R * c;
 };
 
-export const calculateSafetyScore = (accidents: number): number => {
-  if (accidents === 0) return 1.0;
-  if (accidents === 2) return 0.9;
-  if (accidents <= 4) return 0.8;
-  if (accidents <= 6) return 0.7;
-  if (accidents <= 8) return 0.6;
-  if (accidents <= 10) return 0.4;
-  if (accidents <= 12) return 0.3;
-  if (accidents <= 14) return 0.2;
-  if (accidents <= 16) return 0.1;
-  return 0;
+export const calculateSafetyScore = (accidents: number, fatalities: number): number => {
+  let score = 0;
+  if (accidents === 0) score = 1.0;
+  if (accidents <= 2 && accidents > 0) score = 0.9;
+  if (accidents <= 4 && accidents > 2) score = 0.8;
+  if (accidents <= 6 && accidents > 4) score = 0.7;
+  if (accidents <= 8 && accidents > 6) score = 0.6;
+  if (accidents <= 10 && accidents > 8) score = 0.4;
+  if (accidents <= 12 && accidents > 10) score = 0.3;
+  if (accidents <= 14 && accidents > 12) score = 0.2;
+  if (accidents <= 16 && accidents > 14) score = 0.1;
+
+  if (fatalities > 0) score /= 2;
+  return score;
 };
 
 export const getSafetyColor = (score: number): string => {

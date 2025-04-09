@@ -10,7 +10,7 @@ import {
 import { useState, useEffect, useRef } from "react";
 import { useTheme } from "@/context/ThemeContext";
 import Navigation from "./components/navigation";
-import { BlueBikeStation, Accident } from "./types/types";
+import { BlueBikeStation, Accident, Fatality } from "./types/types";
 import {
   calculateDistance,
   calculateSafetyScore,
@@ -49,6 +49,7 @@ export default function Home() {
   );
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [accidents, setAccidents] = useState<Accident[]>([]);
+  const [fatalities, setFatalities] = useState<Fatality[]>([]);
   const [showNoStationsPopup, setShowNoStationsPopup] = useState(false);
   const { isDarkMode } = useTheme();
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -74,6 +75,19 @@ export default function Home() {
       setAccidents(data);
     } catch (error) {
       console.error("Error fetching accidents:", error);
+    }
+  };
+
+  const fetchFatalities = async () => {
+    try {
+      const response = await fetch("/api/fatalities");
+      if (!response.ok) {
+        throw new Error("Failed to fetch fatalities data");
+      }
+      const data = await response.json();
+      setFatalities(data);
+    } catch (error) {
+      console.error("Error fetching fatalities:", error);
     }
   };
 
@@ -166,9 +180,7 @@ export default function Home() {
     }
   };
 
-  // Function to check if a location is in Boston
   const isInBoston = (lat: number, lng: number): boolean => {
-    // Boston's approximate boundaries
     const bostonBounds = {
       north: 42.4,
       south: 42.2,
@@ -211,14 +223,14 @@ export default function Home() {
 
     fetchStations();
     fetchAccidents();
+    fetchFatalities();
   }, []);
 
   useEffect(() => {
     if (searchLocation) {
-      // Check if the location is in Boston
       if (!isInBoston(searchLocation.lat, searchLocation.lng)) {
         setShowNoStationsPopup(true);
-        setTimeout(() => setShowNoStationsPopup(false), 5000); // Hide after 5 seconds
+        setTimeout(() => setShowNoStationsPopup(false), 5000);
         return;
       }
 
@@ -243,21 +255,31 @@ export default function Home() {
             return distance <= 0.1;
           }).length;
 
-          const safetyScore = calculateSafetyScore(nearbyAccidents);
+          const nearbyFatalities = fatalities.filter((fatality) => {
+            const distance = calculateDistance(
+              parseFloat(station.latitude.toString()),
+              parseFloat(station.longitude.toString()),
+              fatality.latitude,
+              fatality.longitude
+            );
+            return distance <= 0.4;
+          }).length;
+
+          const safetyScore = calculateSafetyScore(nearbyAccidents, nearbyFatalities);
 
           return {
             ...station,
             nearbyAccidents,
+            nearbyFatalities,
             safetyScore,
           };
         });
 
       setFilteredStations(nearbyStations);
 
-      // Show popup if no stations are nearby
       if (nearbyStations.length === 0) {
         setShowNoStationsPopup(true);
-        setTimeout(() => setShowNoStationsPopup(false), 5000); // Hide after 5 seconds
+        setTimeout(() => setShowNoStationsPopup(false), 5000);
       }
 
       if (nearbyStations.length > 0) {
@@ -579,6 +601,15 @@ export default function Home() {
                                 }`}
                               >
                                 {station.nearbyAccidents} accidents within 0.1
+                                mi
+                              </span>
+                              <br />
+                              <span
+                                className={`text-sm font-medium ${
+                                  isDarkMode ? "text-gray-300" : "text-gray-600"
+                                }`}
+                              >
+                                {station.nearbyFatalities} fatalities within 0.4
                                 mi
                               </span>
                             </div>
