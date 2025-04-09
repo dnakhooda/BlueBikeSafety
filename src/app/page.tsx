@@ -139,12 +139,11 @@ export default function Home() {
         lng: parseFloat(station.longitude.toString()),
       });
     }
-    
-    // Scroll to the selected station in the sidebar
+
     setTimeout(() => {
       const stationElement = stationRefs.current.get(station.name);
       if (stationElement && sidebarRef.current) {
-        stationElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        stationElement.scrollIntoView({ behavior: "smooth", block: "center" });
       }
     }, 100);
   };
@@ -174,9 +173,9 @@ export default function Home() {
       north: 42.4,
       south: 42.2,
       east: -70.9,
-      west: -71.2
+      west: -71.2,
     };
-    
+
     return (
       lat >= bostonBounds.south &&
       lat <= bostonBounds.north &&
@@ -222,7 +221,7 @@ export default function Home() {
         setTimeout(() => setShowNoStationsPopup(false), 5000); // Hide after 5 seconds
         return;
       }
-      
+
       const nearbyStations = stations
         .filter((station) => {
           const distance = calculateDistance(
@@ -613,7 +612,14 @@ export default function Home() {
                       }}
                     />
                   )}
-                  {directions && <DirectionsRenderer directions={directions} />}
+                  {directions && (
+                    <DirectionsRenderer
+                      directions={directions}
+                      options={{
+                        suppressMarkers: true,
+                      }}
+                    />
+                  )}
                 </GoogleMap>
               </div>
             </div>
