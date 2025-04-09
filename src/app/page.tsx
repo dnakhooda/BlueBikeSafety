@@ -348,18 +348,35 @@ export default function Home() {
         <Navigation />
 
         {showNoStationsPopup && (
-          <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
-            isDarkMode ? "bg-red-800 text-white" : "bg-red-100 text-red-800"
-          }`}>
+          <div
+            className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
+              isDarkMode ? "bg-red-800 text-white" : "bg-red-100 text-red-800"
+            }`}
+          >
             <div className="flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 mr-2"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
               </svg>
-              <span className="font-medium">Address not in Boston or no stations nearby</span>
+              <span className="font-medium">
+                Address not in Boston or no stations nearby
+              </span>
             </div>
-            <button 
+            <button
               onClick={() => setShowNoStationsPopup(false)}
-              className={`mt-2 text-sm ${isDarkMode ? "text-red-200 hover:text-white" : "text-red-600 hover:text-red-800"}`}
+              className={`mt-2 text-sm ${
+                isDarkMode
+                  ? "text-red-200 hover:text-white"
+                  : "text-red-600 hover:text-red-800"
+              }`}
             >
               Dismiss
             </button>
@@ -417,15 +434,20 @@ export default function Home() {
                     Nearby Stations
                   </h2>
                   {searchLocation && (
-                    <div className={`mb-4 p-3 rounded-lg ${
-                      isDarkMode ? "bg-blue-900 text-white" : "bg-blue-100 text-blue-800"
-                    }`}>
+                    <div
+                      className={`mb-4 p-3 rounded-lg ${
+                        isDarkMode
+                          ? "bg-blue-900 text-white"
+                          : "bg-blue-100 text-blue-800"
+                      }`}
+                    >
                       <div className="flex items-center">
                         <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
                         <span className="font-medium">Your Location</span>
                       </div>
                       <p className="text-sm mt-1">
-                        {searchLocation.lat.toFixed(4)}, {searchLocation.lng.toFixed(4)}
+                        {searchLocation.lat.toFixed(4)},{" "}
+                        {searchLocation.lng.toFixed(4)}
                       </p>
                     </div>
                   )}
