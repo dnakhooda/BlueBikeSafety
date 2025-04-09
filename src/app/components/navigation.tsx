@@ -1,4 +1,5 @@
 import { useTheme } from "@/context/ThemeContext";
+import Image from "next/image";
 import { FiSun, FiMoon } from "react-icons/fi";
 
 const Navigation = () => {
@@ -14,10 +15,11 @@ const Navigation = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <img
+              <Image
                 src="/images/icon.png"
                 alt="Blue Bike Safety"
-                className="h-10 w-10"
+                width={40}
+                height={40}
               />
             </div>
             <div className="ml-4">
