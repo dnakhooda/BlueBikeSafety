@@ -34,7 +34,7 @@ export async function GET() {
       .on("end", () => {
         resolve(NextResponse.json(stations));
       })
-      .on("error", (error) => {
+      .on("error", () => {
         reject(
           NextResponse.json({ error: "Error parsing CSV" }, { status: 500 })
         );

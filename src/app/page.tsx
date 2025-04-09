@@ -50,7 +50,7 @@ export default function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [accidents, setAccidents] = useState<Accident[]>([]);
   const [showNoStationsPopup, setShowNoStationsPopup] = useState(false);
-  const { isDarkMode, toggleDarkMode } = useTheme();
+  const { isDarkMode } = useTheme();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const directionsService = useRef<google.maps.DirectionsService | null>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
