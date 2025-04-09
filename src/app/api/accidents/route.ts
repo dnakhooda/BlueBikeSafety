@@ -10,10 +10,10 @@ interface Accident {
 
 interface AccidentRow {
   lat: string;
-  long: string;  
+  long: string;
 }
 
-export async function GET() {
+export async function GET(): Promise<Response> {
   const filePath = path.join(
     process.cwd(),
     "public",
@@ -22,7 +22,7 @@ export async function GET() {
   );
   const accidents: Accident[] = [];
 
-  return new Promise((resolve, reject) => {
+  return new Promise<Response>((resolve, reject) => {
     fs.createReadStream(filePath)
       .pipe(csvParser())
       .on("data", (row: AccidentRow) => {
