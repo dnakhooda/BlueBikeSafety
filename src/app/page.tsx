@@ -262,7 +262,7 @@ export default function Home() {
               fatality.latitude,
               fatality.longitude
             );
-            return distance <= 0.4;
+            return distance <= 0.3;
           }).length;
 
           const safetyScore = calculateSafetyScore(nearbyAccidents, nearbyFatalities);
@@ -609,7 +609,7 @@ export default function Home() {
                                   isDarkMode ? "text-gray-300" : "text-gray-600"
                                 }`}
                               >
-                                {station.nearbyFatalities} fatalities within 0.4
+                                {station.nearbyFatalities} fatalities within 0.3
                                 mi
                               </span>
                             </div>
