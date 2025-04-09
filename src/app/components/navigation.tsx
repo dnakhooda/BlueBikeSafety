@@ -17,7 +17,7 @@ const Navigation = () => {
             <div className="flex-shrink-0">
               <Image
                 src="/images/icon.png"
-                alt="Blue Bike Safety"
+                alt="Safe Bluebike Finder"
                 width={40}
                 height={40}
               />
@@ -28,7 +28,7 @@ const Navigation = () => {
                   isDarkMode ? "text-white" : "text-gray-900"
                 }`}
               >
-                Blue Bike Safety
+                Safe Bluebike Finder
               </h1>
               <p
                 className={`text-sm ${

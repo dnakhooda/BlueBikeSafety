@@ -6,7 +6,7 @@ import { ThemeProvider } from "@/context/ThemeContext";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Blue Bike Safety",
+  title: "Safe Bluebike Finder",
   description: "Find safe biking routes in Boston",
 };
 
