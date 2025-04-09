@@ -4,6 +4,12 @@ import fs from "fs";
 import path from "path";
 import { BlueBikeStation } from "@/app/types/types";
 
+interface BikeStationRow {
+  Lat: string;
+  Long: string;  
+  NAME: string;
+}
+
 export async function GET() {
   const filePath = path.join(
     process.cwd(),
@@ -16,7 +22,7 @@ export async function GET() {
   return new Promise((resolve, reject) => {
     fs.createReadStream(filePath)
       .pipe(csvParser())
-      .on("data", (row: any) => {
+      .on("data", (row: BikeStationRow) => {
         if (row.NAME && row.Lat && row.Long) {
           stations.push({
             name: row.NAME,

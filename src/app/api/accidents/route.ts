@@ -4,6 +4,11 @@ import fs from "fs";
 import path from "path";
 import { Accident } from "@/app/types/types";
 
+interface AccidentRow {
+  lat: string;
+  long: string;  
+}
+
 export async function GET() {
   const filePath = path.join(
     process.cwd(),
@@ -16,7 +21,7 @@ export async function GET() {
   return new Promise((resolve, reject) => {
     fs.createReadStream(filePath)
       .pipe(csvParser())
-      .on("data", (row: any) => {
+      .on("data", (row: AccidentRow) => {
         if (row.lat && row.long) {
           accidents.push({
             latitude: parseFloat(row.lat),
