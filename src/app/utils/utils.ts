@@ -14,7 +14,7 @@ export const calculateSafetyScore = (
   let score = 1 / (1 + danger);
 
   if (fatalities > 0)
-    score *= 0.75;
+    score *= 0.25;
 
   if (recentAccidents === 0)
     score += 0.1;
