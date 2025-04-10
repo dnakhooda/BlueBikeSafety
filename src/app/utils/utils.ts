@@ -3,23 +3,26 @@ export const calculateSafetyScore = (
   fatalities: number,
   recentAccidents: number
 ): number => {
-  const log = (x: number) => Math.log(x + 1);
+  if (accidents === 0 && fatalities === 0)
+    return 1;
 
-  const accidentWeight = log(accidents);
-  const recentAccidentWeight = log(recentAccidents);
+  const accidentWeight = log(accidents, 6);
+  const recentAccidentWeight = log(recentAccidents, 6);
 
-  const danger = accidentWeight * 0.7 + recentAccidentWeight * 0.3;
+  const danger = accidentWeight * 0.75 + recentAccidentWeight * 0.25;
 
   let score = 1 / (1 + danger);
 
   if (fatalities > 0)
-    score *= 0.5;
+    score *= 0.75;
 
-  if (recentAccidents === 0 && fatalities === 0)
-    score += 0.05;
+  if (recentAccidents === 0)
+    score += 0.1;
 
   return Math.max(0, Math.min(score, 1));
 };
+
+const log = (x: number, y:number) => Math.log(x + 1) / Math.log(y);
 
 export const calculateDistance = (
   lat1: number,
@@ -41,8 +44,8 @@ export const calculateDistance = (
 };
 
 export const getSafetyColor = (score: number): string => {
-  const red = Math.round(155 * (1 - score) + 50);
-  const green = Math.round(155 * score + 50);
+  const red = Math.round(180 * (1 - score) + 25);
+  const green = Math.round(180 * score + 25);
   return `rgb(${red}, ${green}, 0)`;
 };
 
