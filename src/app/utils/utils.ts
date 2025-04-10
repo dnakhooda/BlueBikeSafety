@@ -6,10 +6,10 @@ export const calculateSafetyScore = (
   if (accidents === 0 && fatalities === 0)
     return 1;
 
-  const accidentWeight = log(accidents, 6);
-  const recentAccidentWeight = log(recentAccidents, 6);
+  const logAccident = log(accidents, 6);
+  const logRecentAccident = log(recentAccidents, 6);
 
-  const danger = accidentWeight * 0.75 + recentAccidentWeight * 0.25;
+  const danger = logAccident * 0.75 + logRecentAccident * 0.25;
 
   let score = 1 / (1 + danger);
 
