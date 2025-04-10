@@ -35,7 +35,7 @@ const Navigation = () => {
                   isDarkMode ? "text-gray-300" : "text-gray-500"
                 }`}
               >
-                Find safe biking routes in Boston
+                Find safe biking stations in Boston
               </p>
             </div>
           </div>
