@@ -6,6 +6,7 @@ import {
   Marker,
   Autocomplete,
   DirectionsRenderer,
+  BicyclingLayer,
 } from "@react-google-maps/api";
 import { useState, useEffect, useRef } from "react";
 import { useTheme } from "@/context/ThemeContext";
@@ -51,6 +52,7 @@ export default function Home() {
   const [accidents, setAccidents] = useState<Accident[]>([]);
   const [fatalities, setFatalities] = useState<Fatality[]>([]);
   const [showNoStationsPopup, setShowNoStationsPopup] = useState(false);
+  const [showBikeLanes, setShowBikeLanes] = useState(false);
   const { isDarkMode } = useTheme();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const directionsService = useRef<google.maps.DirectionsService | null>(null);
@@ -214,6 +216,10 @@ export default function Home() {
       );
       return distanceA - distanceB;
     });
+  };
+
+  const toggleBikeLanes = () => {
+    setShowBikeLanes(!showBikeLanes);
   };
 
   useEffect(() => {
@@ -499,6 +505,32 @@ export default function Home() {
                       </p>
                     </div>
                   )}
+                  {searchLocation && (
+                    <div className="mb-4">
+                      <button
+                        onClick={toggleBikeLanes}
+                        className={`w-full p-2 rounded-lg flex items-center justify-center gap-2 ${
+                          isDarkMode
+                            ? "bg-blue-900 text-white hover:bg-blue-800"
+                            : "bg-blue-100 text-blue-800 hover:bg-blue-200"
+                        }`}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 100-12 6 6 0 000 12zm-1-5a1 1 0 011-1h2a1 1 0 110 2h-2a1 1 0 01-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        {showBikeLanes ? "Hide Bike Lanes" : "Show Bike Lanes"}
+                      </button>
+                    </div>
+                  )}
                   <div className="space-y-4 max-h-[calc(100vh-400px)] overflow-y-auto">
                     {getSortedStations().map((station, index) => {
                       const distance = searchLocation
@@ -721,6 +753,7 @@ export default function Home() {
                       }}
                     />
                   )}
+                  {showBikeLanes && <BicyclingLayer />}
                 </GoogleMap>
               </div>
             </div>
