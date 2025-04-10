@@ -53,6 +53,7 @@ export default function Home() {
   const [fatalities, setFatalities] = useState<Fatality[]>([]);
   const [showNoStationsPopup, setShowNoStationsPopup] = useState(false);
   const [showBikeLanes, setShowBikeLanes] = useState(false);
+  const [isGoogleMapsLoaded, setIsGoogleMapsLoaded] = useState(false);
   const { isDarkMode } = useTheme();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const directionsService = useRef<google.maps.DirectionsService | null>(null);
@@ -94,7 +95,7 @@ export default function Home() {
   };
 
   const zoomToAllStations = () => {
-    if (map && filteredStations.length > 0) {
+    if (map && filteredStations.length > 0 && isGoogleMapsLoaded) {
       const bounds = new google.maps.LatLngBounds();
 
       filteredStations.forEach((station) => {
@@ -125,7 +126,12 @@ export default function Home() {
     }
 
     setSelectedStation(station);
-    if (map && searchLocation && directionsService.current) {
+    if (
+      map &&
+      searchLocation &&
+      directionsService.current &&
+      isGoogleMapsLoaded
+    ) {
       const origin = new google.maps.LatLng(
         searchLocation.lat,
         searchLocation.lng
@@ -352,10 +358,15 @@ export default function Home() {
   }, [searchLocation, stations, accidents, fatalities]);
 
   useEffect(() => {
-    if (map && searchLocation && !directionsService.current) {
+    if (
+      map &&
+      searchLocation &&
+      !directionsService.current &&
+      isGoogleMapsLoaded
+    ) {
       directionsService.current = new google.maps.DirectionsService();
     }
-  }, [map, searchLocation]);
+  }, [map, searchLocation, isGoogleMapsLoaded]);
 
   useEffect(() => {
     if (isDarkMode) {
@@ -393,6 +404,7 @@ export default function Home() {
     <LoadScript
       googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}
       libraries={["places"]}
+      onLoad={() => setIsGoogleMapsLoaded(true)}
     >
       <div
         className={`min-h-screen ${
@@ -728,7 +740,9 @@ export default function Home() {
                       onClick={() => handleStationClick(station)}
                       icon={{
                         url: getMarkerIcon(station.safetyScore),
-                        scaledSize: new google.maps.Size(32, 32),
+                        scaledSize: isGoogleMapsLoaded
+                          ? new google.maps.Size(32, 32)
+                          : undefined,
                       }}
                     />
                   ))}

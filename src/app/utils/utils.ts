@@ -3,22 +3,22 @@ export const calculateSafetyScore = (
   fatalities: number,
   recentAccidents: number
 ): number => {
-  let score = 0;
-  if (accidents === 0) score = 1.0;
-  else if (accidents <= 2) score = 0.9;
-  else if (accidents <= 4) score = 0.8;
-  else if (accidents <= 6) score = 0.7;
-  else if (accidents <= 8) score = 0.6;
-  else if (accidents <= 10) score = 0.4;
-  else if (accidents <= 12) score = 0.3;
-  else if (accidents <= 14) score = 0.2;
-  else if (accidents <= 16) score = 0.1;
+  const log = (x: number) => Math.log(x + 1);
 
-  if (fatalities > 0) score /= 2;
+  const accidentWeight = log(accidents);
+  const recentAccidentWeight = log(recentAccidents);
 
-  if (recentAccidents === 0) score *= 1.25;
+  const danger = accidentWeight * 0.7 + recentAccidentWeight * 0.3;
 
-  return score;
+  let score = 1 / (1 + danger);
+
+  if (fatalities > 0)
+    score *= 0.5;
+
+  if (recentAccidents === 0 && fatalities === 0)
+    score += 0.05;
+
+  return Math.max(0, Math.min(score, 1));
 };
 
 export const calculateDistance = (
