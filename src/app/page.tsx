@@ -471,12 +471,12 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="flex gap-4 transition-all">
+          <div className="flex flex-col md:flex-row gap-4 transition-all">
             <div
               className={`${
                 isDarkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
               } rounded-xl shadow-lg p-4 transition-all ${
-                isSidebarOpen ? "w-90" : "w-12"
+                isSidebarOpen ? "w-full md:w-90" : "w-12"
               }`}
             >
               <button
@@ -717,11 +717,11 @@ export default function Home() {
             <div
               className={`flex-1 ${
                 isDarkMode ? "bg-gray-800" : "bg-white"
-              } rounded-xl shadow-lg p-4 h-[calc(100vh-300px)]`}
+              } rounded-xl shadow-lg p-4 h-[400px] md:h-[calc(100vh-300px)]`}
             >
               <div className="w-full h-full rounded-lg overflow-hidden">
                 <GoogleMap
-                  mapContainerClassName="w-full h-full rounded-lg"
+                  mapContainerClassName="w-full h-full rounded-lg min-h-[400px]"
                   center={center}
                   zoom={13}
                   onLoad={(map) => setMap(map)}
