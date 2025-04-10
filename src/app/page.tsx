@@ -54,7 +54,7 @@ export default function Home() {
   const [showNoStationsPopup, setShowNoStationsPopup] = useState(false);
   const [showBikeLanes, setShowBikeLanes] = useState(false);
   const [isGoogleMapsLoaded, setIsGoogleMapsLoaded] = useState(false);
-  const { isDarkMode, toggleDarkMode } = useTheme();
+  const { isDarkMode } = useTheme();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const directionsService = useRef<google.maps.DirectionsService | null>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
