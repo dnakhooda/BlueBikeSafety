@@ -225,10 +225,6 @@ export default function Home() {
     });
   };
 
-  const toggleBikeLanes = () => {
-    setShowBikeLanes(!showBikeLanes);
-  };
-
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
       alert("Geolocation is not supported by your browser");
@@ -243,38 +239,38 @@ export default function Home() {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
         };
-        
+
         setSearchLocation(location);
         setDirections(null);
         setSelectedStation(null);
-        
+
         if (map) {
           map.panTo(location);
           map.setZoom(15);
         }
-        
+
         setIsLocating(false);
       },
       (error) => {
         console.error("Error getting location:", error);
         setIsLocating(false);
-        
-        // Show error message based on the error code
+
         let errorMessage = "Unable to retrieve your location";
         if (error.code === 1) {
-          errorMessage = "Location access denied. Please allow location access in your browser settings.";
+          errorMessage =
+            "Location access denied. Please allow location access in your browser settings.";
         } else if (error.code === 2) {
           errorMessage = "Location unavailable. Please try again later.";
         } else if (error.code === 3) {
           errorMessage = "Location request timed out. Please try again.";
         }
-        
+
         alert(errorMessage);
       },
       {
         enableHighAccuracy: true,
         timeout: 10000,
-        maximumAge: 0
+        maximumAge: 0,
       }
     );
   };
@@ -533,13 +529,38 @@ export default function Home() {
                   title="Use my current location"
                 >
                   {isLocating ? (
-                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      className="animate-spin h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                   ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   )}
                 </button>
@@ -547,17 +568,17 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-4 transition-all">
+          <div className="flex flex-col md:flex-row gap-4 h-auto md:h-[557px] transition-all">
             <div
               className={`${
                 isDarkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
-              } rounded-xl shadow-lg p-4 transition-all ${
+              } rounded-xl shadow-lg p-4 transition-all flex flex-col ${
                 isSidebarOpen ? "w-full md:w-90" : "w-12"
               }`}
             >
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className={`mb-4 ${
+                className={`mb-4 flex justify-start ${
                   isDarkMode
                     ? "text-gray-300 hover:text-white"
                     : "text-gray-500 hover:text-gray-700"
@@ -567,7 +588,10 @@ export default function Home() {
               </button>
 
               {isSidebarOpen && (
-                <div ref={sidebarRef}>
+                <div
+                  ref={sidebarRef}
+                  className="flex flex-col flex-1 overflow-hidden"
+                >
                   <h2
                     className={`text-xl font-semibold mb-4 ${
                       isDarkMode ? "text-white" : "text-black"
@@ -577,7 +601,7 @@ export default function Home() {
                   </h2>
                   {searchLocation && (
                     <div
-                      className={`mb-4 p-3 rounded-lg ${
+                      className={`flex justify-between mb-4 p-3 rounded-lg ${
                         isDarkMode
                           ? "bg-blue-900 text-white"
                           : "bg-blue-100 text-blue-800"
@@ -593,33 +617,7 @@ export default function Home() {
                       </p>
                     </div>
                   )}
-                  {searchLocation && (
-                    <div className="mb-4">
-                      <button
-                        onClick={toggleBikeLanes}
-                        className={`w-full p-2 rounded-lg flex items-center justify-center gap-2 ${
-                          isDarkMode
-                            ? "bg-blue-900 text-white hover:bg-blue-800"
-                            : "bg-blue-100 text-blue-800 hover:bg-blue-200"
-                        }`}
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 100-12 6 6 0 000 12zm-1-5a1 1 0 011-1h2a1 1 0 110 2h-2a1 1 0 01-1-1z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                        {showBikeLanes ? "Hide Bike Lanes" : "Show Bike Lanes"}
-                      </button>
-                    </div>
-                  )}
-                  <div className="space-y-4 max-h-[calc(100vh-400px)] overflow-y-auto">
+                  <div className="space-y-4 overflow-y-auto flex-1 pb-2">
                     {getSortedStations().map((station, index) => {
                       const distance = searchLocation
                         ? calculateDistance(
@@ -795,7 +793,32 @@ export default function Home() {
                 isDarkMode ? "bg-gray-800" : "bg-white"
               } rounded-xl shadow-lg p-4 h-[400px] md:h-[calc(100vh-300px)]`}
             >
-              <div className="w-full h-full rounded-lg overflow-hidden">
+              <div className="w-full h-full rounded-lg overflow-hidden relative">
+                <button
+                  onClick={() => setShowBikeLanes(!showBikeLanes)}
+                  className={`absolute bottom-7 left-2 z-10 p-2 rounded-lg flex items-center justify-center gap-2 shadow-md ${
+                    isDarkMode
+                      ? "bg-blue-600 text-white hover:bg-blue-700"
+                      : "bg-blue-500 text-white hover:bg-blue-600"
+                  }`}
+                  title={showBikeLanes ? "Hide Bike Lanes" : "Show Bike Lanes"}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 100-12 6 6 0 000 12zm-1-5a1 1 0 011-1h2a1 1 0 110 2h-2a1 1 0 01-1-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span className="text-xs">
+                    {showBikeLanes ? "Hide Bike Lanes" : "Show Bike Lanes"}
+                  </span>
+                </button>
                 <GoogleMap
                   mapContainerClassName="w-full h-full rounded-lg min-h-[400px]"
                   center={center}

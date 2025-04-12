@@ -15,7 +15,7 @@ export async function GET(): Promise<Response> {
     process.cwd(),
     "public",
     "data",
-    "uncleanData.csv"
+    "bike_stations.csv"
   );
   const stations: BlueBikeStation[] = [];
 

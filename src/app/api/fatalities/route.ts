@@ -10,7 +10,7 @@ interface FatalityRow {
 }
 
 export async function GET(): Promise<Response> {
-  const filePath = path.join(process.cwd(), "public", "data", "fatalities.csv");
+  const filePath = path.join(process.cwd(), "public", "data", "bike_fatalities.csv");
   const fatalities: Fatality[] = [];
 
   return new Promise<Response>((resolve, reject) => {
