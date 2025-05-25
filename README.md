@@ -15,6 +15,7 @@ Safe Bluebike Finder is a web app that helps you find safe Bluebike stations aro
 
 <h2>How to Run Safe Bluebike Finder 🚴</h2>
 Safe Bluebike Finder requires a Google Maps API key to function. Follow these steps to get started:
+<p> </p>
 
 - Clone the Safe Bluebike Finder repository.
 - Install all dependencies:
