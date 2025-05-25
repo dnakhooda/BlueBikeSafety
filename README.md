@@ -17,6 +17,10 @@ Safe Bluebike Finder is a web app that helps you find safe Bluebike stations aro
 Safe Bluebike Finder requires a Google Maps API key to function. Follow these steps to get started:
 
 - Clone the Safe Bluebike Finder repository.
+- Install all dependencies:
+```
+npm install
+```
 - In the project root, create a `.env.local` file.
 - Add your Google Maps API key to the file in the following format:
 ```
