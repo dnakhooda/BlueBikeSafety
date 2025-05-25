@@ -30,12 +30,6 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=YOUR_API_KEY
 - Now, you can run the development server:
 ```
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 - Open http://localhost:3000 with your browser to see Safe Bluebike Finder.
 
